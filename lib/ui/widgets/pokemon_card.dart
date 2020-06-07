@@ -96,8 +96,12 @@ class PokemonCard extends StatelessWidget {
             height: itemHeight * 0.78,
             fit: BoxFit.contain,
             alignment: Alignment.bottomRight,
-            progressIndicatorBuilder: (_, __, downloadProgress) =>
-                CircularProgressIndicator(value: downloadProgress.progress),
+            placeholder: (context, url) => Image(
+              image: AppImages.bulbasaur,
+              width: itemHeight * 0.72,
+              height: itemHeight * 0.72,
+              color: Colors.black12,
+            ),
             errorWidget: (_, __, error) => Icon(Icons.error),
           ),
         ),

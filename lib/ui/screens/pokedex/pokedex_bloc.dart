@@ -1,9 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../core/bloc.dart';
 import '../../../core/bloc_state.dart';
 import '../../../core/fetch_state.dart';
+import '../../../domain/entities/pokemon.dart';
 import '../../../domain/usecases/pokemon_usecases.dart';
+
+part 'blocs/fab_menu.dart';
+part 'blocs/pokemon_state.dart';
 
 @injectable
 class PokedexBloc extends Bloc {
@@ -20,34 +25,18 @@ class PokedexBloc extends Bloc {
     pokemonState.dispose();
   }
 
-  void getPokemons() async {
+  Future getPokemons({bool reset = false}) async {
     try {
-      pokemonState.add(LoadingState());
+      pokemonState.onLoadStart(reset: reset);
 
-      final pokemons = await _getPokemonsUseCase(GetPokemonParams(
-        page: 0,
+      final newPokemons = await _getPokemonsUseCase(GetPokemonParams(
+        page: pokemonState.page,
         limit: 20,
       ));
 
-      if (pokemons.isEmpty) {
-        pokemonState.add(EmptyState());
-      } else {
-        pokemonState.add(SuccessState(pokemons));
-      }
+      pokemonState.onLoadFinish(newPokemons, reset: reset);
     } on Exception catch (e) {
-      pokemonState.add(ErrorState(e));
+      pokemonState.onLoadError(e);
     }
   }
-}
-
-class _FabMenuBlocState extends BlocState<bool> {
-  _FabMenuBlocState() : super(defaultValue: false);
-
-  bool get isShowFab => value;
-
-  void toggle() => add(!isShowFab);
-}
-
-class _PokemonBlocState extends BlocState<FetchState> {
-  _PokemonBlocState() : super(defaultValue: LoadingState());
 }

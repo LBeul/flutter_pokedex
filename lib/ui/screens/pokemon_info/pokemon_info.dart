@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../widgets/slide_up_panel.dart';
-import 'widgets/info.dart';
-import 'widgets/tab.dart';
-
 class PokemonInfo extends StatelessWidget {
   const PokemonInfo();
 

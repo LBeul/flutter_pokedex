@@ -1,19 +1,29 @@
-class FetchState {}
+class FetchState {
+  final bool canLoadMore;
 
-class NoInternetState extends FetchState {}
+  const FetchState(this.canLoadMore);
+}
 
-class LoadingState extends FetchState {}
+class NoInternetState extends FetchState {
+  const NoInternetState() : super(false);
+}
 
-class EmptyState extends FetchState {}
+class InitialState extends FetchState {
+  const InitialState() : super(true);
+}
+
+class EmptyState extends FetchState {
+  const EmptyState() : super(false);
+}
 
 class SuccessState<T> extends FetchState {
-  SuccessState(this.data);
+  const SuccessState(this.data, {bool canLoadMore = true}) : super(canLoadMore);
 
   final T data;
 }
 
 class ErrorState<E extends Exception> extends FetchState {
-  ErrorState(this.error);
+  const ErrorState(this.error) : super(false);
 
   final E error;
 }

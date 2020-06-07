@@ -21,7 +21,7 @@ class Stat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentProgress = progress == null ? value / 100 : progress;
+    final currentProgress = progress ?? value / 100;
 
     return Row(
       mainAxisSize: MainAxisSize.max,
@@ -100,8 +100,7 @@ class _PokemonBaseStatsState extends State<PokemonBaseStats>
       SizedBox(height: 14),
       Stat(animation: _animation, label: 'Sp. Atk', value: stats.specialAttack),
       SizedBox(height: 14),
-      Stat(
-          animation: _animation, label: 'Sp. Def', value: stats.specialDefense),
+      Stat(animation: _animation, label: 'Sp. Def', value: stats.specialDefense),
       SizedBox(height: 14),
       Stat(animation: _animation, label: 'Speed', value: stats.speed),
       SizedBox(height: 14),

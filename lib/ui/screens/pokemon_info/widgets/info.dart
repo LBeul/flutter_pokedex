@@ -52,7 +52,7 @@ class _PokemonOverallInfoState extends State<PokemonOverallInfo>
   }
 
   @override
-  dispose() {
+  void dispose() {
     _slideController?.dispose();
     _rotateController?.dispose();
     _pageController?.dispose();
@@ -66,13 +66,12 @@ class _PokemonOverallInfoState extends State<PokemonOverallInfo>
         AnimationController(vsync: this, duration: Duration(milliseconds: 360));
     _slideController.forward();
 
-    _rotateController = AnimationController(
-        vsync: this, duration: Duration(milliseconds: 5000));
+    _rotateController =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 5000));
     _rotateController.repeat();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final RenderBox targetTextBox =
-          _targetTextKey.currentContext.findRenderObject();
+      final RenderBox targetTextBox = _targetTextKey.currentContext.findRenderObject();
       final targetTextPosition = targetTextBox.localToGlobal(Offset.zero);
 
       final currentTextBox =
@@ -276,8 +275,7 @@ class _PokemonOverallInfoState extends State<PokemonOverallInfo>
                   curve: Curves.easeOutQuint,
                   padding: EdgeInsets.only(
                     top: selectedIndex == index ? 0 : screenSize.height * 0.04,
-                    bottom:
-                        selectedIndex == index ? 0 : screenSize.height * 0.04,
+                    bottom: selectedIndex == index ? 0 : screenSize.height * 0.04,
                   ),
                   child: CachedNetworkImage(
                     imageUrl: pokemons[index].image,
@@ -308,8 +306,8 @@ class _PokemonOverallInfoState extends State<PokemonOverallInfo>
     final pokeSize = screenSize.width * 0.448;
     final pokeTop =
         -(pokeSize / 2 - (IconTheme.of(context).size / 2 + _appBarTopPadding));
-    final pokeRight = -(pokeSize / 2 -
-        (IconTheme.of(context).size / 2 + _appBarHorizontalPadding));
+    final pokeRight =
+        -(pokeSize / 2 - (IconTheme.of(context).size / 2 + _appBarHorizontalPadding));
 
     return [
       Positioned(

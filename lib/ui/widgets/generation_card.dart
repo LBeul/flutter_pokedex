@@ -31,7 +31,6 @@ class GenerationCard extends StatelessWidget {
             Container(
               constraints: BoxConstraints.expand(),
               padding: EdgeInsets.all(16),
-              // color: Colors.red,
               child: Column(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

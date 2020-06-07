@@ -1,5 +1,4 @@
 import 'package:injectable/injectable.dart';
-import 'package:parse_server_sdk/parse_server_sdk.dart';
 import 'package:pokedex/env/env.dart';
 
 import '../../../core/exceptions.dart';

@@ -1,8 +1,10 @@
+import 'dart:math' show max;
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/fetch_state.dart';
 import '../../../di/injection.dart';
-import '../../../domain/entities/pokemon.dart';
 import '../../../routes.dart';
 import '../../widgets/fab.dart';
 import '../../widgets/poke_container.dart';
@@ -25,9 +27,29 @@ class PokedexScreen extends StatefulWidget {
 
 class _PokedexScreenState extends State<PokedexScreen>
     with SingleTickerProviderStateMixin {
+  static const double endReachedThreshold = 200;
+
   PokedexBloc _bloc;
   Animation<double> _fabAnimation;
   AnimationController _fabAnimationController;
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    _fabAnimationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 260),
+    );
+
+    _fabAnimation = Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+      curve: Curves.easeInOut,
+      parent: _fabAnimationController,
+    ));
+
+    _scrollController.addListener(_onScroll);
+
+    super.initState();
+  }
 
   @override
   void didChangeDependencies() {
@@ -50,23 +72,26 @@ class _PokedexScreenState extends State<PokedexScreen>
   void dispose() {
     _bloc.dispose();
     _fabAnimationController.dispose();
+    _scrollController.dispose();
 
     super.dispose();
   }
 
-  @override
-  void initState() {
-    _fabAnimationController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 260),
-    );
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
 
-    _fabAnimation = Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-      curve: Curves.easeInOut,
-      parent: _fabAnimationController,
-    ));
+    final thresholdReached = _scrollController.position.extentAfter < endReachedThreshold;
+    final state = _bloc.pokemonState.value;
+    final isLoading = _bloc.pokemonState.loading;
 
-    super.initState();
+    // Load more!
+    if (thresholdReached && !isLoading && state is! EmptyState && state is! ErrorState) {
+      _bloc.getPokemons();
+    }
+  }
+
+  Future _onRefresh() async {
+    await _bloc.getPokemons(reset: true);
   }
 
   void _showSearchModal() {
@@ -87,12 +112,7 @@ class _PokedexScreenState extends State<PokedexScreen>
 
   Widget _buildTitle() {
     return Padding(
-      padding: EdgeInsets.only(
-        top: 18,
-        left: 26,
-        right: 26,
-        bottom: 4,
-      ),
+      padding: EdgeInsets.only(top: 18, left: 26, right: 26, bottom: 4),
       child: Text(
         'Pokedex',
         style: TextStyle(
@@ -107,7 +127,11 @@ class _PokedexScreenState extends State<PokedexScreen>
     return Expanded(
       child: StreamBuilder(
         stream: _bloc.pokemonState.stream,
-        builder: (_, snapshot) => _PokemonGrid(fetchState: snapshot.data),
+        builder: (_, snapshot) => _PokemonGrid(
+          fetchState: snapshot.data,
+          controller: _scrollController,
+          onRefresh: _onRefresh,
+        ),
       ),
     );
   }
@@ -117,8 +141,7 @@ class _PokedexScreenState extends State<PokedexScreen>
     return Scaffold(
       body: PokeballBackground(
         buildChildren: (props) {
-          final appBarTop =
-              props.size / 2 + props.top - IconTheme.of(context).size / 2;
+          final appBarTop = props.size / 2 + props.top - IconTheme.of(context).size / 2;
 
           return [
             Column(

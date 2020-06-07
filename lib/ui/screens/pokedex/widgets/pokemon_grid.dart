@@ -1,49 +1,85 @@
 part of '../pokedex.dart';
 
 class _PokemonGrid extends StatelessWidget {
-  const _PokemonGrid({Key key, this.fetchState}) : super(key: key);
+  _PokemonGrid({
+    Key key,
+    @required this.fetchState,
+    @required this.controller,
+    @required this.onRefresh,
+  }) : super(key: key);
 
+  final ScrollController controller;
   final FetchState fetchState;
+  final Future Function() onRefresh;
 
   @override
   Widget build(BuildContext context) {
     final state = fetchState;
 
-    if (state == null || state is LoadingState) {
+    // show when opening screen
+    if (state == null || state is InitialState) {
       return Center(child: CircularProgressIndicator());
     }
 
+    // show when the data is loaded
+    if (state is SuccessState) {
+      final bottomOffset = MediaQuery.of(context).padding.bottom;
+      final paddingBottom = max(bottomOffset, 28);
+
+      return CustomScrollView(
+        controller: controller,
+        physics: BouncingScrollPhysics(),
+        slivers: [
+          CupertinoSliverRefreshControl(
+            onRefresh: onRefresh,
+          ),
+          SliverPadding(
+            padding: EdgeInsets.all(28),
+            sliver: SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 1.4,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => PokemonCard(
+                  state.data[index],
+                  index: index,
+                  onPress: () => AppNavigator.push(Routes.pokemonInfo, {
+                    'number': state.data[index].number,
+                  }),
+                ),
+                childCount: state.data?.length ?? 0,
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: state.canLoadMore
+                ? Container(
+                    padding: EdgeInsets.only(bottom: paddingBottom),
+                    alignment: Alignment.center,
+                    child: CircularProgressIndicator(),
+                  )
+                : SizedBox(),
+          ),
+        ],
+      );
+    }
+
+    // show when no data to display
     if (state is EmptyState) {
       return Text('No data');
     }
 
+    // show when any error occured
     if (state is ErrorState) {
       return Center(
         child: Text('Error'),
       );
     }
 
-    if (state is SuccessState<List<Pokemon>>) {
-      return GridView.builder(
-        physics: BouncingScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 1.4,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-        ),
-        padding: EdgeInsets.all(28),
-        itemCount: state.data?.length ?? 0,
-        itemBuilder: (context, index) => PokemonCard(
-          state.data[index],
-          index: index,
-          onPress: () => AppNavigator.push(Routes.pokemonInfo, {
-            'number': state.data[index].number,
-          }),
-        ),
-      );
-    }
-
+    // default case
     return Center(
       child: Text('Unknown Error'),
     );
